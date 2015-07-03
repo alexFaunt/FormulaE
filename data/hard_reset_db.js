@@ -17,16 +17,16 @@ var TABLES = {
     DRIVERS: 'drivers'
 };
 
-database[Database.TYPES.TABLE][TABLES.SEASONS] = {
+database.addTable(TABLES.SEASONS, {
     id: Database.FIELD_TYPES.INT,
     year: Database.FIELD_TYPES.INT
-};
+});
 
-database[Database.TYPES.TABLE][TABLES.DRIVERS] = {
+database.addTable(TABLES.DRIVERS, {
     id: Database.FIELD_TYPES.INT,
     first_name: Database.FIELD_TYPES.VARCHAR(255),
     second_name: Database.FIELD_TYPES.VARCHAR(255)
-};
+});
 
 
 

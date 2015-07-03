@@ -100,6 +100,10 @@ Database.prototype.commitCommands = function (commands) {
     connection.end();
 };
 
+Database.prototype.addTable = function (name, table) {
+    this[TYPES.TABLE][name] = table;
+};
+
 /** Log or throw! **/
 var onSqlResponse = function (msg, err) {
     if (err) {
