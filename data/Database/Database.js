@@ -18,6 +18,11 @@ var FIELD_TYPES = {
     }
 };
 
+var ATTRS = {
+    NOT_NULL: 'NOT NULL',
+    PRIMARY_KEY: 'PRIMARY KEY'
+};
+
 var Database = function (name, server, user) {
     this.name = name;
     this.server = server;
@@ -48,7 +53,27 @@ Database.prototype.createCommand = function (command, type, name) {
 
     for (var prop in this[type][name]) {
         if (this[type][name].hasOwnProperty(prop)){
-            argArr.push(prop + ' ' + this[type][name][prop]);
+
+            var def = prop + ' ';
+
+            // If its a simple type - we just need the string
+            if (typeof this[type][name][prop] === 'string') {
+                argArr.push(def + this[type][name][prop]);
+                continue;
+            }
+
+            // More complicated version
+            // Property name + the type
+            // e.g. id int
+            def += this[type][name][prop].type;
+
+            // if theres attrs
+            // e.g. id in NOT NULL FOREIGN KEY
+            if (this[type][name][prop].attrs) {
+                def += ' ' + this[type][name][prop].attrs.join(' ');
+            }
+
+            argArr.push(def);
         }
     }
 
@@ -115,6 +140,7 @@ Database.prototype.addTable = function (name, table) {
 /** Log or throw! **/
 var onSqlResponse = function (msg, err) {
     if (err) {
+        console.error('error in ' + msg);
         throw err;
     }
 
@@ -126,6 +152,8 @@ Database.COMMANDS = COMMANDS;
 Database.TYPES = TYPES;
 
 Database.FIELD_TYPES = FIELD_TYPES;
+
+Database.ATTRS = ATTRS;
 
 module.exports = Database;
 
