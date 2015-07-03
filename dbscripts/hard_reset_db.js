@@ -4,9 +4,8 @@ const mysql = require('mysql');
 
 /****** Connect *******/
 
-var DB_NAME = 'formulae';
-
 var COMMANDS = {
+    USE: 'USE',
     CREATE: 'CREATE',
     DROP: 'DROP TABLE IF EXISTS'
 };
@@ -22,11 +21,15 @@ var FIELD_TYPES = {
     }
 }
 
-// Declare that we have a db
-var db = {};
+var Database = function (name, server, user) {
+    this.name = name;
+    this.server = server;
+    this.user = user;
+    this[TYPES.TABLE] = {};
+};
 
 // do a command
-var createCommand = function (command, type, name) {
+Database.prototype.createCommand = function (command, type, name) {
 
     const cmd = [];
 
@@ -46,9 +49,9 @@ var createCommand = function (command, type, name) {
 
     const argArr = [];
 
-    for (var prop in db[type][name]) {
-        if (db[type][name].hasOwnProperty(prop)){
-            argArr.push(prop + ' ' + db[type][name][prop]);
+    for (var prop in this[type][name]) {
+        if (this[type][name].hasOwnProperty(prop)){
+            argArr.push(prop + ' ' + this[type][name][prop]);
         }
     }
 
@@ -57,28 +60,47 @@ var createCommand = function (command, type, name) {
     return cmd.join(' ');
 };
 
-var creatCommandOnAllOfType = function (command, type) {
+Database.prototype.creatCommandOnAllOfType = function (command, type) {
     var commands = [];
-    for (var name in db[type]) {
-        commands.push(createCommand(command, type, name));
+    for (var name in this[type]) {
+        commands.push(this.createCommand(command, type, name));
     }
     return commands;
 };
 
 // Do it to everything
-var createCommandOnAll = function (command) {
+Database.prototype.createCommandOnAll = function (command) {
     var commands = [];
 
-    for (var type in db) {
-        commands = commands.concat(creatCommandOnAllOfType(command, type));
+    for (var type in TYPES) {
+        commands = commands.concat(this.creatCommandOnAllOfType(command, type));
     }
 
     return commands;
-}
+};
 
+// Okay do it all!
+Database.prototype.commitCommands = function (commands) {
+    const connection = mysql.createConnection({
+        host: this.server,
+        user: this.user
+    });
+
+    connection.connect();
+
+    // use this db!
+    commands.unshift(COMMANDS.USE + ' ' + this.name);
+
+    for (var i = 0, len = commands.length; i < len; i += 1) {
+        console.log('attempt: ' + commands[i]);
+        connection.query(commands[i], onSqlResponse.bind(this, commands[i]));
+    }
+
+    connection.end();
+};
 
 /** Log or throw! **/
-var responseHandler = function (msg, err) {
+var onSqlResponse = function (msg, err) {
     if (err) {
         throw err;
     }
@@ -87,60 +109,43 @@ var responseHandler = function (msg, err) {
 };
 
 
-// Okay do it all!
-var commitCommands = function (commands) {
-    const connection = mysql.createConnection({
-        host: 'localhost',
-        user: 'root'
-    });
-
-    connection.connect();
-
-    for (var i = 0, len = commands.length; i < len; i += 1) {
-        console.log('attempt: ' + commands[i]);
-        connection.query(commands[i], responseHandler.bind(this, commands[i]));
-    }
-
-    connection.end();
-}
 
 
 
 /******* Define the database *********/
+
+
+var database = new Database('formulae', 'localhost', 'root');
 
 var TABLES = {
     SEASONS: 'seasons',
     DRIVERS: 'drivers'
 };
 
-db[TYPES.TABLE] = {};
-
-db[TYPES.TABLE][TABLES.SEASONS] = {
+database[TYPES.TABLE][TABLES.SEASONS] = {
     id: FIELD_TYPES.INT,
     year: FIELD_TYPES.INT
 };
 
-db[TYPES.TABLE][TABLES.DRIVERS] = {
+database[TYPES.TABLE][TABLES.DRIVERS] = {
     id: FIELD_TYPES.INT,
     first_name: FIELD_TYPES.VARCHAR(255),
     second_name: FIELD_TYPES.VARCHAR(255)
-}
+};
 
 
 
 /******* List all the commands *********/
 
-var sqlCmds = ['USE ' + DB_NAME];
-
 // Drop all types of table
-sqlCmds = sqlCmds.concat(creatCommandOnAllOfType(COMMANDS.DROP, TYPES.TABLE));
+var sqlCmds = database.creatCommandOnAllOfType(COMMANDS.DROP, TYPES.TABLE);
 
 // Create everything.
-sqlCmds = sqlCmds.concat(createCommandOnAll(COMMANDS.CREATE));
+sqlCmds = sqlCmds.concat(database.createCommandOnAll(COMMANDS.CREATE));
 
 
 /* GO GO GO */
-commitCommands(sqlCmds);
+database.commitCommands(sqlCmds);
 
 
 
