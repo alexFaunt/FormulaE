@@ -1,6 +1,6 @@
 /****** Setup *******/
 
-const Database = require('Database');
+const Database = require('./Database');
 
 /****** Connect *******/
 
@@ -33,14 +33,7 @@ database.addTable(TABLES.DRIVERS, {
 /******* List all the commands *********/
 
 // Drop all types of table
-var sqlCmds = database.creatCommandOnAllOfType(Database.COMMANDS.DROP, Database.TYPES.TABLE);
 
-// Create everything.
-sqlCmds = sqlCmds.concat(database.createCommandOnAll(Database.COMMANDS.CREATE));
+database.executeOnAll(Database.COMMANDS.DROP);
 
-
-/* GO GO GO */
-database.commitCommands(sqlCmds);
-
-
-
+database.executeOnAll(Database.COMMANDS.CREATE);

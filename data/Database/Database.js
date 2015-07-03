@@ -57,7 +57,7 @@ Database.prototype.createCommand = function (command, type, name) {
     return cmd.join(' ');
 };
 
-Database.prototype.creatCommandOnAllOfType = function (command, type) {
+Database.prototype.createCommandOnAllOfType = function (command, type) {
     var commands = [];
     for (var name in this[type]) {
         if (this[type].hasOwnProperty(name)){
@@ -67,17 +67,25 @@ Database.prototype.creatCommandOnAllOfType = function (command, type) {
     return commands;
 };
 
+Database.prototype.executeOnAllOfType = function (command, type) {
+    this.commitCommands(this.createCommandOnAllOfType(command, type));
+};
+
 // Do it to everything
 Database.prototype.createCommandOnAll = function (command) {
     var commands = [];
 
     for (var type in TYPES) {
         if (TYPES.hasOwnProperty(type)){
-            commands = commands.concat(this.creatCommandOnAllOfType(command, type));
+            commands = commands.concat(this.createCommandOnAllOfType(command, type));
         }
     }
 
     return commands;
+};
+
+Database.prototype.executeOnAll = function (command) {
+    this.commitCommands(this.createCommandOnAll(command));
 };
 
 // Okay do it all!
