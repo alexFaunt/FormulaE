@@ -1,0 +1,12 @@
+{
+  "name": "FormulaE",
+  "version": "0.0.1",
+  "description": "FormulaE",
+  "license": "MIT",
+  "author": {
+    "name": "Alex"
+  },
+  "devDependencies": {
+    "lodash": "^3.10.0"
+  }
+}

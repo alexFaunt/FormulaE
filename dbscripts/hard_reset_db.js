@@ -1,6 +1,6 @@
 /****** Setup *******/
 
-const mysql = require('mysql');
+const Database = require('Database');
 
 /****** Connect *******/
 
@@ -19,94 +19,94 @@ var FIELD_TYPES = {
     VARCHAR: function (chars) {
         return 'varchar(' + chars + ')';
     }
-}
-
-var Database = function (name, server, user) {
-    this.name = name;
-    this.server = server;
-    this.user = user;
-    this[TYPES.TABLE] = {};
 };
 
-// do a command
-Database.prototype.createCommand = function (command, type, name) {
+// var Database = function (name, server, user) {
+//     this.name = name;
+//     this.server = server;
+//     this.user = user;
+//     this[TYPES.TABLE] = {};
+// };
 
-    const cmd = [];
+// // do a command
+// Database.prototype.createCommand = function (command, type, name) {
 
-    cmd.push(command);
+//     const cmd = [];
 
-    // If it's not drop add the type
-    if (command !== COMMANDS.DROP) {
-        cmd.push(type);
-    }
+//     cmd.push(command);
 
-    cmd.push(name);
+//     // If it's not drop add the type
+//     if (command !== COMMANDS.DROP) {
+//         cmd.push(type);
+//     }
 
-    // If it's drop, we just need the name
-    if (command === COMMANDS.DROP) {
-        return cmd.join(' ');
-    }
+//     cmd.push(name);
 
-    const argArr = [];
+//     // If it's drop, we just need the name
+//     if (command === COMMANDS.DROP) {
+//         return cmd.join(' ');
+//     }
 
-    for (var prop in this[type][name]) {
-        if (this[type][name].hasOwnProperty(prop)){
-            argArr.push(prop + ' ' + this[type][name][prop]);
-        }
-    }
+//     const argArr = [];
 
-    cmd.push('(' + argArr.join(',') + ')');
+//     for (var prop in this[type][name]) {
+//         if (this[type][name].hasOwnProperty(prop)){
+//             argArr.push(prop + ' ' + this[type][name][prop]);
+//         }
+//     }
 
-    return cmd.join(' ');
-};
+//     cmd.push('(' + argArr.join(',') + ')');
 
-Database.prototype.creatCommandOnAllOfType = function (command, type) {
-    var commands = [];
-    for (var name in this[type]) {
-        commands.push(this.createCommand(command, type, name));
-    }
-    return commands;
-};
+//     return cmd.join(' ');
+// };
 
-// Do it to everything
-Database.prototype.createCommandOnAll = function (command) {
-    var commands = [];
+// Database.prototype.creatCommandOnAllOfType = function (command, type) {
+//     var commands = [];
+//     for (var name in this[type]) {
+//         commands.push(this.createCommand(command, type, name));
+//     }
+//     return commands;
+// };
 
-    for (var type in TYPES) {
-        commands = commands.concat(this.creatCommandOnAllOfType(command, type));
-    }
+// // Do it to everything
+// Database.prototype.createCommandOnAll = function (command) {
+//     var commands = [];
 
-    return commands;
-};
+//     for (var type in TYPES) {
+//         commands = commands.concat(this.creatCommandOnAllOfType(command, type));
+//     }
 
-// Okay do it all!
-Database.prototype.commitCommands = function (commands) {
-    const connection = mysql.createConnection({
-        host: this.server,
-        user: this.user
-    });
+//     return commands;
+// };
 
-    connection.connect();
+// // Okay do it all!
+// Database.prototype.commitCommands = function (commands) {
+//     const connection = mysql.createConnection({
+//         host: this.server,
+//         user: this.user
+//     });
 
-    // use this db!
-    commands.unshift(COMMANDS.USE + ' ' + this.name);
+//     connection.connect();
 
-    for (var i = 0, len = commands.length; i < len; i += 1) {
-        console.log('attempt: ' + commands[i]);
-        connection.query(commands[i], onSqlResponse.bind(this, commands[i]));
-    }
+//     // use this db!
+//     commands.unshift(COMMANDS.USE + ' ' + this.name);
 
-    connection.end();
-};
+//     for (var i = 0, len = commands.length; i < len; i += 1) {
+//         console.log('attempt: ' + commands[i]);
+//         connection.query(commands[i], onSqlResponse.bind(this, commands[i]));
+//     }
 
-/** Log or throw! **/
-var onSqlResponse = function (msg, err) {
-    if (err) {
-        throw err;
-    }
+//     connection.end();
+// };
 
-    console.log(msg);
-};
+// /** Log or throw! **/
+// var onSqlResponse = function (msg, err) {
+//     if (err) {
+//         throw err;
+//     }
+
+//     console.log(msg);
+// };
 
 
 
