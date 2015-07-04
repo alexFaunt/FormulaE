@@ -2,14 +2,15 @@
 
 const COMMANDS = require('./COMMANDS');
 
-const OBJECT_TYPES = require('./OBJECT_TYPES');
-
 const CONSTRAINTS = require('./CONSTRAINTS');
+
+const OBJECT_TYPES = require('./OBJECT_TYPES');
 
 var Table = function (props) {
     this.name = props.name;
     this.fields = props.fields;
     this.constraints = props.constraints || {};
+    this.primaryKey = null;
 };
 
 /**
@@ -45,8 +46,10 @@ Table.prototype.getCommand = function (opts) {
 Table.prototype.getFieldsDefinition = function () {
     var definitions = [];
 
-    for (var i = 0, len = this.fields.length; i < len; i += 1) {
-        definitions.push(this.fields[i].getDefinition());
+    for (var fieldName in this.fields) {
+        if (this.fields.hasOwnProperty(fieldName)) {
+            definitions.push(this.fields[fieldName].getDefinition(fieldName));
+        }
     }
 
     return definitions.concat(this.getConstraints());
@@ -57,7 +60,12 @@ Table.prototype.getConstraints = function () {
 
     for (var field in this.constraints) {
         if (this.constraints.hasOwnProperty(field)) {
-            constraints.push(this.constraints[field] + '(' + field + ')');
+
+            constraints.push(this.constraints[field].getDefinition(field));
+
+            if (this.constraints[field].type === CONSTRAINTS.PRIMARY_KEY){
+                this.primaryKey = field;
+            }
         }
     }
 

@@ -14,6 +14,24 @@ var Database = function (name, server, user) {
     this.tables = {};
 };
 
+/** Log or throw! **/
+var onSqlResponse = function (msg, resolve, reject, err) {
+    if (err) {
+        console.error('error in ' + msg);
+        console.error(err);
+        reject(err);
+        throw err;
+        return;
+    }
+
+    console.log(msg);
+    resolve();
+};
+
+var queryPromise = function (connection, msg, resolve, reject) {
+    connection.query(msg, onSqlResponse.bind(this, msg, resolve, reject));
+};
+
 /**
  * Send commands to the sql instance
  * @param  {String[]} Either a string or array of strings
@@ -32,14 +50,17 @@ Database.prototype.execute = function (commands) {
 
     // use this db!
     commands.unshift(COMMANDS.USE + ' ' + this.name);
+    commands.unshift('SET FOREIGN_KEY_CHECKS=0');
+
+    var promises = [];
 
     for (var i = 0, len = commands.length; i < len; i += 1) {
-        connection.query(commands[i], onSqlResponse.bind(this, commands[i]));
+        promises.push(new Promise(queryPromise.bind(this, connection, commands[i])));
     }
 
-// TODO - return promise.all
-
     connection.end();
+
+    return Promise.all(promises);
 };
 
 // Create the table
@@ -47,15 +68,12 @@ Database.prototype.createTable = function (table) {
     this.tables[table.name] = table;
 
     // Drop it if it exists
-    this.dropTable(table);
-
-// TODO - after we drop - need promise to do before we create
-
-    // Create it
-    return this.execute(table.getCommand({
+    // Then recreate it
+    return this.dropTable(table).then(this.execute.bind(this, table.getCommand({
         command: COMMANDS.CREATE
-    }));
+    })));
 };
+
 /**
  * Drop table
  * @param  {string} table
@@ -103,15 +121,6 @@ Database.prototype.create = function () {
 };
 
 
-/** Log or throw! **/
-var onSqlResponse = function (msg, err) {
-    if (err) {
-        console.error('error in ' + msg);
-        throw err;
-    }
-
-    console.log(msg);
-};
 
 module.exports = Database;
 
