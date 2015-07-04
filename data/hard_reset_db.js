@@ -1,51 +1,101 @@
 /****** Setup *******/
 
-const Database = require('./Database');
+
+// DO THIS PROPERLY
+// MAKE - TABLE
+// MAKE IT OUTPUT ITS OWN SQL BASED ON ITS PROBS
+// DATABASE.ADDTABLE(TABLE)
+// DOC WHILE YOU GO
 
 
-// Helper
-var PRIMARY_KEY_INT = {
-    type: Database.FIELD_TYPES.INT,
-    attrs: [
-         Database.ATTRS.NOT_NULL,
-         Database.ATTRS.PRIMARY_KEY
-    ]
-};
+const Database = require('./jsql/Database');
+
+const Table = require('./jsql/Table');
+
+const Field = require('./jsql/Field');
+
+const FIELD_TYPES = require('./jsql/FIELD_TYPES');
+
+const COMMANDS = require('./jsql/COMMANDS');
+
+const CONSTRAINTS = require('./jsql/CONSTRAINTS');
 
 
-/******* Define the database *********/
+// /******* Define the database *********/
 
 var database = new Database('formulae', 'localhost', 'root');
 
-var TABLES = {};
-
-
-// Tables!
-TABLES.SEASONS = 'seasons';
-database.addTable(TABLES.SEASONS, {
-    id: PRIMARY_KEY_INT,
-    year: Database.FIELD_TYPES.INT
+var seasons = new Table({
+    name: 'seasons',
+    fields: [
+        new Field({
+            name: 'id',
+            type: FIELD_TYPES.INT
+        })
+    ],
+    constraints: {
+        id: CONSTRAINTS.PRIMARY_KEY
+    }
 });
 
-TABLES.DRIVERS = 'drivers';
-database.addTable(TABLES.DRIVERS, {
-    id: PRIMARY_KEY_INT,
-    first_name: Database.FIELD_TYPES.VARCHAR(255),
-    second_name: Database.FIELD_TYPES.VARCHAR(255)
-});
+// database.clearAll();
 
-TABLES.TEAMS = 'teams';
-database.addTable(TABLES.TEAMS, {
-    id: PRIMARY_KEY_INT,
-    name: Database.FIELD_TYPES.VARCHAR(255)
-});
+database.createTable(seasons);
+
+// // Tables!
+// TABLES.SEASONS = database.addTable('seasons', {
+//     id: {
+//         type: FIELD_TYPES.INT,
+//         attrs: [
+//             FIELD_ATTRS.NOT_NULL,
+//             FIELD_ATTRS.PRIMARY_KEY
+//         ]
+//     },
+//     year: FIELD_TYPES.INT
+// });
+
+// TABLES.DRIVERS = database.addTable('drivers', {
+//     id: {
+//         type: FIELD_TYPES.INT,
+//         attrs: [
+//             FIELD_ATTRS.NOT_NULL,
+//             FIELD_ATTRS.PRIMARY_KEY
+//         ]
+//     },
+//     first_name: FIELD_TYPES.VARCHAR(255),
+//     second_name: FIELD_TYPES.VARCHAR(255)
+// });
+
+// TABLES.TEAMS = database.addTable('teams', {
+//     id: {
+//         type: FIELD_TYPES.INT,
+//         attrs: [
+//             FIELD_ATTRS.NOT_NULL,
+//             FIELD_ATTRS.PRIMARY_KEY
+//         ]
+//     },
+//     name: FIELD_TYPES.VARCHAR(255)
+// });
+
+// TABLES.SEASONS_TEAMS_DRIVERS = 'seasons_teams_drivers';
+// database.addTable(TABLES.SEASONS_TEAMS_DRIVERS, {
+//     season_id: {
+//         foreignKey: TABLES.SEASONS.name
+//     },
+//     team_id: {
+//         foreignKey: TABLES.TEAMS.name
+//     },
+//     driver_id: {
+//         foreignKey: TABLES.DRIVERS.name
+//     }
+// });
 
 
 
-/******* List all the commands *********/
+// // /******* List all the commands *********/
 
-// Drop all types of table
+// // // Drop all types of table
 
-database.executeOnAll(Database.COMMANDS.DROP);
+// database.executeOnAll(COMMANDS.DROP);
 
-database.executeOnAll(Database.COMMANDS.CREATE);
+// database.executeOnAll(COMMANDS.CREATE);

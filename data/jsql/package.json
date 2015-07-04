@@ -1,0 +1,10 @@
+{
+  "name": "jsql",
+  "version": "0.0.1",
+  "description": "jsql",
+  "license": "MIT",
+  "main": "jsql.js",
+  "author": {
+    "name": "Alex"
+  }
+}
