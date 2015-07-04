@@ -27,10 +27,6 @@ const FIELD_ATTRS = require('./jsql/FIELD_ATTRS');
 
 var database = new Database('formulae', 'localhost', 'root');
 
-database.drop();
-
-database.create();
-
 var seasons = new Table({
     name: 'seasons',
     fields: {
@@ -135,61 +131,4 @@ var seasons_teams_drivers = new Table({
 });
 database.createTable(seasons_teams_drivers);
 
-
-// // Tables!
-// TABLES.SEASONS = database.addTable('seasons', {
-//     id: {
-//         type: FIELD_TYPES.INT,
-//         attrs: [
-//             FIELD_ATTRS.NOT_NULL,
-//             FIELD_ATTRS.PRIMARY_KEY
-//         ]
-//     },
-//     year: FIELD_TYPES.INT
-// });
-
-// TABLES.DRIVERS = database.addTable('drivers', {
-//     id: {
-//         type: FIELD_TYPES.INT,
-//         attrs: [
-//             FIELD_ATTRS.NOT_NULL,
-//             FIELD_ATTRS.PRIMARY_KEY
-//         ]
-//     },
-//     first_name: FIELD_TYPES.VARCHAR(255),
-//     second_name: FIELD_TYPES.VARCHAR(255)
-// });
-
-// TABLES.TEAMS = database.addTable('teams', {
-//     id: {
-//         type: FIELD_TYPES.INT,
-//         attrs: [
-//             FIELD_ATTRS.NOT_NULL,
-//             FIELD_ATTRS.PRIMARY_KEY
-//         ]
-//     },
-//     name: FIELD_TYPES.VARCHAR(255)
-// });
-
-// TABLES.SEASONS_TEAMS_DRIVERS = 'seasons_teams_drivers';
-// database.addTable(TABLES.SEASONS_TEAMS_DRIVERS, {
-//     season_id: {
-//         foreignKey: TABLES.SEASONS.name
-//     },
-//     team_id: {
-//         foreignKey: TABLES.TEAMS.name
-//     },
-//     driver_id: {
-//         foreignKey: TABLES.DRIVERS.name
-//     }
-// });
-
-
-
-// // /******* List all the commands *********/
-
-// // // Drop all types of table
-
-// database.executeOnAll(COMMANDS.DROP);
-
-// database.executeOnAll(COMMANDS.CREATE);
+database.create();

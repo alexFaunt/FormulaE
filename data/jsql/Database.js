@@ -12,6 +12,14 @@ var Database = function (name, server, user) {
     this.server = server;
     this.user = user;
     this.tables = {};
+    this.created = false;
+
+    this.commands = [
+        [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, name].join(' '),
+        [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, name].join(' '),
+        [COMMANDS.USE, name].join(' '),
+        [COMMANDS.SET, 'FOREIGN_KEY_CHECKS=0'].join(' ')
+    ];
 };
 
 /** Log or throw! **/
@@ -21,7 +29,6 @@ var onSqlResponse = function (msg, resolve, reject, err) {
         console.error(err);
         reject(err);
         throw err;
-        return;
     }
 
     console.log(msg);
@@ -48,10 +55,6 @@ Database.prototype.execute = function (commands) {
 
     connection.connect();
 
-    // use this db!
-    commands.unshift(COMMANDS.USE + ' ' + this.name);
-    commands.unshift('SET FOREIGN_KEY_CHECKS=0');
-
     var promises = [];
 
     for (var i = 0, len = commands.length; i < len; i += 1) {
@@ -67,45 +70,14 @@ Database.prototype.execute = function (commands) {
 Database.prototype.createTable = function (table) {
     this.tables[table.name] = table;
 
-    // Drop it if it exists
-    // Then recreate it
-    return this.dropTable(table).then(this.execute.bind(this, table.getCommand({
-        command: COMMANDS.CREATE
-    })));
-};
-
-/**
- * Drop table
- * @param  {string} table
- * @return {[type]}
- */
-Database.prototype.dropTable = function (table) {
-    return this.execute(table.getCommand({
+    this.commands.push(table.getCommand({
         command: COMMANDS.DROP,
         condition: CONDITIONS.IF_EXISTS
     }));
-};
 
-/**
- *
- * @param  {String} - name of the table
- * @return {[type]}
- */
-Database.prototype.getTable = function (name) {
-    return this.tables[name];
-};
-
-/**
- * Drop the whole DB
- * @return {[type]}
- */
-Database.prototype.drop = function () {
-    return this.execute([
-        COMMANDS.DROP,
-        OBJECT_TYPES.DATABASE,
-        CONDITIONS.IF_EXISTS,
-        this.name
-    ].join(' '));
+    this.commands.push(table.getCommand({
+        command: COMMANDS.CREATE
+    }));
 };
 
 /**
@@ -113,11 +85,10 @@ Database.prototype.drop = function () {
  * @return {[type]}
  */
 Database.prototype.create = function () {
-    return this.execute([
-        COMMANDS.CREATE,
-        OBJECT_TYPES.DATABASE,
-        this.name
-    ].join(' '));
+    var promise = this.execute(this.commands);
+    this.created = true;
+    this.commands = [];
+    return promise;
 };
 
 
