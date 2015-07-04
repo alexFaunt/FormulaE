@@ -10,8 +10,6 @@
 
 const Database = require('./jsql/Database');
 
-const Table = require('./jsql/Table');
-
 const Field = require('./jsql/Field');
 
 const Constraint = require('./jsql/Constraint');
@@ -25,10 +23,14 @@ const FIELD_ATTRS = require('./jsql/FIELD_ATTRS');
 
 // /******* Define the database *********/
 
-var database = new Database('formulae', 'localhost', 'root');
+var db = {
+    name: 'formulae',
+    server: 'localhost',
+    user: 'root',
+    tables: {}
+};
 
-var seasons = new Table({
-    name: 'seasons',
+db.tables.seasons = {
     fields: {
         id: new Field({
             type: FIELD_TYPES.INT,
@@ -49,11 +51,9 @@ var seasons = new Table({
             type: CONSTRAINTS.PRIMARY_KEY
         })
     }
-});
-database.createTable(seasons);
+};
 
-var drivers = new Table({
-    name: 'drivers',
+db.tables.drivers = {
     fields: {
         id: new Field({
             type: FIELD_TYPES.INT,
@@ -74,11 +74,9 @@ var drivers = new Table({
             type: CONSTRAINTS.PRIMARY_KEY
         })
     }
-});
-database.createTable(drivers);
+};
 
-var teams = new Table({
-    name: 'teams',
+db.tables.teams = {
     fields: {
         id: new Field({
             type: FIELD_TYPES.INT,
@@ -96,39 +94,37 @@ var teams = new Table({
             type: CONSTRAINTS.PRIMARY_KEY
         })
     }
-});
-database.createTable(teams);
+};
 
-var seasons_teams_drivers = new Table({
-    name: 'seasons_teams_drivers',
+db.tables.seasons_teams_drivers = {
     fields: {
         season_id: new Field({
-            type: seasons.fields.id.type
+            type: db.tables.seasons.fields.id.type
         }),
         team_id: new Field({
-            type: teams.fields.id.type
+            type: db.tables.teams.fields.id.type
         }),
         driver_id: new Field({
-            type: drivers.fields.id.type
+            type: db.tables.drivers.fields.id.type
         })
     },
     constraints: {
         season_id: new Constraint({
             type: CONSTRAINTS.FOREIGN_KEY,
-            reference: seasons
+            reference: db.tables.seasons
         }),
 
         team_id: new Constraint({
             type: CONSTRAINTS.FOREIGN_KEY,
-            reference: teams
+            reference: db.tables.teams
         }),
 
         driver_id: new Constraint({
             type: CONSTRAINTS.FOREIGN_KEY,
-            reference: drivers
+            reference: db.tables.drivers
         })
     }
-});
-database.createTable(seasons_teams_drivers);
+};
 
+var database = new Database(db);
 database.create();

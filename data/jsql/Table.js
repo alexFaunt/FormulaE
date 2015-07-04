@@ -1,4 +1,12 @@
-
+/**
+ * ------- TODO -------
+ *
+ *  Need to generate Fields + Constraints As the table gets created, because otherwise
+ *  primaryKey is not set which gets set on Table Creation
+ *  See this currently runs, but the REFERENCES Table(undefinted) <<< that is the problem
+ *  Plus it means DB constructor is just JSON
+ *
+ */
 
 const COMMANDS = require('./COMMANDS');
 
@@ -18,7 +26,6 @@ var Table = function (props) {
  * @return {}
  */
 Table.prototype.getCommand = function (opts) {
-
 
     // The command to return
     const cmd = [];

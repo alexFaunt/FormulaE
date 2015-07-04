@@ -7,19 +7,38 @@ const OBJECT_TYPES = require('./OBJECT_TYPES');
 
 const CONDITIONS = require('./CONDITIONS');
 
-var Database = function (name, server, user) {
-    this.name = name;
-    this.server = server;
-    this.user = user;
-    this.tables = {};
-    this.created = false;
+const Table = require('./Table');
 
-    this.commands = [
-        [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, name].join(' '),
-        [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, name].join(' '),
-        [COMMANDS.USE, name].join(' '),
+var Database = function (props) {
+    this.name = props.name;
+    this.server = props.server;
+    this.user = props.user;
+
+    this.tables = {};
+    this.addTables(props.tables);
+};
+
+/**
+ * Burn everything and reset it from what we know about the db
+ * @return {}
+ */
+Database.prototype.create = function () {
+    var commands = [
+        [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, this.name].join(' '),
+        [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, this.name].join(' '),
+        [COMMANDS.USE, this.name].join(' '),
         [COMMANDS.SET, 'FOREIGN_KEY_CHECKS=0'].join(' ')
     ];
+
+    for (var table in this.tables) {
+        if (this.tables.hasOwnProperty(table)) {
+            commands = commands.concat(this.getCreateTableCommand(this.tables[table]));
+        }
+    }
+
+    this.created = this.execute(commands);
+
+    return this.created;
 };
 
 /** Log or throw! **/
@@ -66,32 +85,36 @@ Database.prototype.execute = function (commands) {
     return Promise.all(promises);
 };
 
-// Create the table
-Database.prototype.createTable = function (table) {
-    this.tables[table.name] = table;
 
-    this.commands.push(table.getCommand({
+// Create the table
+Database.prototype.getCreateTableCommand = function (table) {
+    var commands = [];
+
+    commands.push(table.getCommand({
         command: COMMANDS.DROP,
         condition: CONDITIONS.IF_EXISTS
     }));
 
-    this.commands.push(table.getCommand({
+    commands.push(table.getCommand({
         command: COMMANDS.CREATE
     }));
+
+    return commands;
 };
 
 /**
- * Create the whole DB
- * @return {[type]}
+ * Given an object of tables, create a table class + add it to the db
+ * No generation of code here.
  */
-Database.prototype.create = function () {
-    var promise = this.execute(this.commands);
-    this.created = true;
-    this.commands = [];
-    return promise;
+Database.prototype.addTables = function (tables) {
+    for (var tableName in tables) {
+        if (tables.hasOwnProperty(tableName)) {
+            var table = tables[tableName];
+            table.name = tableName;
+            this.tables[tableName] = new Table(table);
+        }
+    }
 };
-
-
 
 module.exports = Database;
 
