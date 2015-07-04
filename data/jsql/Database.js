@@ -3,7 +3,7 @@ const mysql = require('mysql');
 
 const COMMANDS = require('./COMMANDS');
 
-const CONSTRAINTS = require('./CONSTRAINTS');
+const OBJECT_TYPES = require('./OBJECT_TYPES');
 
 const CONDITIONS = require('./CONDITIONS');
 
@@ -13,7 +13,6 @@ var Database = function (name, server, user) {
     this.user = user;
     this.tables = {};
 };
-
 
 /**
  * Send commands to the sql instance
@@ -35,7 +34,6 @@ Database.prototype.execute = function (commands) {
     commands.unshift(COMMANDS.USE + ' ' + this.name);
 
     for (var i = 0, len = commands.length; i < len; i += 1) {
-        console.log('attempt: ' + commands[i]);
         connection.query(commands[i], onSqlResponse.bind(this, commands[i]));
     }
 
@@ -49,15 +47,59 @@ Database.prototype.createTable = function (table) {
     this.tables[table.name] = table;
 
     // Drop it if it exists
-    this.execute(table.getCommand({
+    this.dropTable(table);
+
+// TODO - after we drop - need promise to do before we create
+
+    // Create it
+    return this.execute(table.getCommand({
+        command: COMMANDS.CREATE
+    }));
+};
+/**
+ * Drop table
+ * @param  {string} table
+ * @return {[type]}
+ */
+Database.prototype.dropTable = function (table) {
+    return this.execute(table.getCommand({
         command: COMMANDS.DROP,
         condition: CONDITIONS.IF_EXISTS
     }));
+};
 
-    // Create it
-    this.execute(table.getCommand({
-        command: COMMANDS.CREATE
-    }));
+/**
+ *
+ * @param  {String} - name of the table
+ * @return {[type]}
+ */
+Database.prototype.getTable = function (name) {
+    return this.tables[name];
+};
+
+/**
+ * Drop the whole DB
+ * @return {[type]}
+ */
+Database.prototype.drop = function () {
+    return this.execute([
+        COMMANDS.DROP,
+        OBJECT_TYPES.DATABASE,
+        CONDITIONS.IF_EXISTS,
+        this.name
+    ].join(' '));
+};
+
+/**
+ * Create the whole DB
+ * @return {[type]}
+ */
+Database.prototype.create = function () {
+    return this.execute([
+        COMMANDS.CREATE,
+        OBJECT_TYPES.DATABASE,
+        this.name
+    ].join(' '));
 };
 
 

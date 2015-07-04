@@ -16,8 +16,6 @@ const Field = require('./jsql/Field');
 
 const FIELD_TYPES = require('./jsql/FIELD_TYPES');
 
-const COMMANDS = require('./jsql/COMMANDS');
-
 const CONSTRAINTS = require('./jsql/CONSTRAINTS');
 
 
@@ -38,7 +36,10 @@ var seasons = new Table({
     }
 });
 
-// database.clearAll();
+
+database.drop();
+
+database.create();
 
 database.createTable(seasons);
 
