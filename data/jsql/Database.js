@@ -7,8 +7,6 @@ const OBJECT_TYPES = require('./OBJECT_TYPES');
 
 const CONDITIONS = require('./CONDITIONS');
 
-const DB_PROPS = require('./DB_PROPS');
-
 const Table = require('./Table');
 
 var Database = function (props) {
