@@ -1,7 +1,8 @@
 
 module.exports = {
-    INT: 'int',
+    INT: 'INT',
+    DATE: 'DATE',
     VARCHAR: function (chars) {
-        return 'varchar(' + chars + ')';
+        return 'VARCHAR(' + chars + ')';
     }
 };

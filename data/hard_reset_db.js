@@ -138,7 +138,22 @@ db.tables.tracks = {
     }
 };
 
-db.tables.events = {
+db.tables.event_types = {
+    fields: {
+        id: {
+            type: FIELD_TYPES.INT,
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
+            ]
+        },
+        name: {
+            type: FIELD_TYPES.VARCHAR(32)
+        }
+    }
+};
+
+db.tables.rounds = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
@@ -152,6 +167,12 @@ db.tables.events = {
         },
         season_id: {
             type: db.tables.seasons.fields.id.type
+        },
+        date_start: {
+            type: FIELD_TYPES.DATE
+        },
+        date_end: {
+            type: FIELD_TYPES.DATE
         }
     },
     constraints: {
@@ -166,16 +187,37 @@ db.tables.events = {
     }
 };
 
-db.tables.results = {
+db.tables.events = {
     fields: {
-        event_id: {
-            type: db.tables.events.fields.id.type,
+        id: {
+            type: FIELD_TYPES.INT,
             constraints: [
-                CONSTRAINTS.PRIMARY_KEY
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
-        pos_1: {
+        round_id: {
+            type: db.tables.rounds.fields.id.type
+        },
+        event_type: {
+            type: db.tables.event_types.fields.id.type
+        },
+        date: {
+            type: FIELD_TYPES.DATE
+        }
+    }
+};
+
+db.tables.event_driver_position = {
+    fields: {
+        event_id: {
+            type: db.tables.events.fields.id.type
+        },
+        driver_id: {
             type: db.tables.drivers.fields.id.type
+        },
+        position: {
+            type: FIELD_TYPES.INT
         }
     },
     constraints: {
@@ -183,7 +225,7 @@ db.tables.results = {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.events
         },
-        pos_1: {
+        driver_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.drivers
         }
