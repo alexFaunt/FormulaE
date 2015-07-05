@@ -34,8 +34,7 @@ Database.prototype.create = function () {
     var commands = [
         [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, this.name].join(' '),
         [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, this.name].join(' '),
-        [COMMANDS.USE, this.name].join(' '),
-        [COMMANDS.SET, DB_PROPS.FOREIGN_KEY_CHECKS(0)].join(' ')
+        [COMMANDS.USE, this.name].join(' ')
     ];
 
     // Create all the tables

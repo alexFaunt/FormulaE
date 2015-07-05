@@ -19,7 +19,7 @@ var Table = function (props) {
     this.fields = {};
     this.addFields(props.fields);
 
-    this.constraints = {};
+    this.constraints = [];
     this.addConstraints(props.constraints);
 };
 
@@ -41,16 +41,26 @@ Table.prototype.addFields = function (fields) {
  * add them.
  */
 Table.prototype.addConstraints = function (constraints) {
-    for (var name in constraints) {
-        if (constraints.hasOwnProperty(name)) {
-            constraints[name].name = name;
+    for (var fieldName in constraints) {
+        if (constraints.hasOwnProperty(fieldName)) {
+            var consArray = constraints[fieldName];
 
-            // Create a new constraint
-            this.constraints[name] = new Constraint(constraints[name]);
+            // If its not an array - wrap it
+            if (Object.prototype.toString.call(consArray) !== '[object Array]') {
+                consArray = [consArray];
+            }
 
-            // If it was primary key - save it
-            if (this.constraints[name].type === CONSTRAINTS.PRIMARY_KEY) {
-                this.primaryKey = name;
+            for (var i = 0, len = consArray.length; i < len; i += 1) {
+                consArray[i].fieldName = fieldName;
+
+                // Create a new constraint
+                var cons = new Constraint(consArray[i]);
+                this.constraints.push(cons);
+
+                // If it was primary key - save it
+                if (cons.type === CONSTRAINTS.PRIMARY_KEY) {
+                    this.primaryKey = fieldName;
+                }
             }
         }
     }
@@ -106,10 +116,8 @@ Table.prototype.getFieldsDefinition = function () {
 Table.prototype.getConstraints = function () {
     var constraints = [];
 
-    for (var field in this.constraints) {
-        if (this.constraints.hasOwnProperty(field)) {
-            constraints.push(this.constraints[field].getDefinition());
-        }
+    for (var i = 0, len = this.constraints.length; i < len; i += 1) {
+        constraints.push(this.constraints[i].getDefinition());
     }
 
     return constraints;

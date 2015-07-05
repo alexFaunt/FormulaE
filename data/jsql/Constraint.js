@@ -2,7 +2,7 @@
 const CONSTRAINTS = require('./CONSTRAINTS');
 
 var Constraint = function (props) {
-    this.name = props.name;
+    this.fieldName = props.fieldName;
     this.type = props.type;
     this.reference = props.reference;
 };
@@ -10,7 +10,7 @@ var Constraint = function (props) {
 Constraint.prototype.getDefinition = function () {
     var def = [this.type];
 
-    def.push('(' + this.name + ')');
+    def.push('(' + this.fieldName + ')');
 
     if (typeof(this.reference) === 'object') {
         def.push(CONSTRAINTS.REFERENCES);
