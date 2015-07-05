@@ -114,5 +114,31 @@ db.tables.seasons_teams_drivers = {
     }
 };
 
+db.tables.countries = {
+    fields: {
+        code: {
+            type: FIELD_TYPES.VARCHAR(3)
+        },
+        name: {
+            type: FIELD_TYPES.VARCHAR(32)
+        }
+    },
+    constraints: {
+        code: {
+            type: CONSTRAINTS.PRIMARY_KEY
+        }
+    }
+};
+
 var database = new Database(db);
 database.create();
+
+
+
+
+
+
+
+
+
+
