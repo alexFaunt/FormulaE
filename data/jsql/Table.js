@@ -1,10 +1,4 @@
 /**
- * ------- TODO -------
- *
- *  Need to generate Fields + Constraints As the table gets created, because otherwise
- *  primaryKey is not set which gets set on Table Creation
- *  See this currently runs, but the REFERENCES Table(undefinted) <<< that is the problem
- *  Plus it means DB constructor is just JSON
  *
  */
 
@@ -14,11 +8,52 @@ const CONSTRAINTS = require('./CONSTRAINTS');
 
 const OBJECT_TYPES = require('./OBJECT_TYPES');
 
+const Field = require('./Field');
+
+const Constraint = require('./Constraint');
+
 var Table = function (props) {
     this.name = props.name;
-    this.fields = props.fields;
-    this.constraints = props.constraints || {};
     this.primaryKey = null;
+
+    this.fields = {};
+    this.addFields(props.fields);
+
+    this.constraints = {};
+    this.addConstraints(props.constraints);
+};
+
+/**
+ * Take Json in and create Field objects +
+ * add them.
+ */
+Table.prototype.addFields = function (fields) {
+    for (var fieldName in fields) {
+        if (fields.hasOwnProperty(fieldName)) {
+            fields[fieldName].name = fieldName;
+            this.fields[fieldName] = new Field(fields[fieldName]);
+        }
+    }
+};
+
+/**
+ * Take Json in and create Field objects +
+ * add them.
+ */
+Table.prototype.addConstraints = function (constraints) {
+    for (var name in constraints) {
+        if (constraints.hasOwnProperty(name)) {
+            constraints[name].name = name;
+
+            // Create a new constraint
+            this.constraints[name] = new Constraint(constraints[name]);
+
+            // If it was primary key - save it
+            if (this.constraints[name].type === CONSTRAINTS.PRIMARY_KEY) {
+                this.primaryKey = name;
+            }
+        }
+    }
 };
 
 /**
@@ -50,29 +85,30 @@ Table.prototype.getCommand = function (opts) {
     return cmd.join(' ');
 };
 
+/**
+ * Get the definitions of the fields as an array
+ */
 Table.prototype.getFieldsDefinition = function () {
     var definitions = [];
 
     for (var fieldName in this.fields) {
         if (this.fields.hasOwnProperty(fieldName)) {
-            definitions.push(this.fields[fieldName].getDefinition(fieldName));
+            definitions.push(this.fields[fieldName].getDefinition());
         }
     }
 
     return definitions.concat(this.getConstraints());
 };
 
+/**
+ * Get the constraints as an array
+ */
 Table.prototype.getConstraints = function () {
     var constraints = [];
 
     for (var field in this.constraints) {
         if (this.constraints.hasOwnProperty(field)) {
-
-            constraints.push(this.constraints[field].getDefinition(field));
-
-            if (this.constraints[field].type === CONSTRAINTS.PRIMARY_KEY){
-                this.primaryKey = field;
-            }
+            constraints.push(this.constraints[field].getDefinition());
         }
     }
 

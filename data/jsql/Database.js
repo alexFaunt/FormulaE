@@ -7,6 +7,8 @@ const OBJECT_TYPES = require('./OBJECT_TYPES');
 
 const CONDITIONS = require('./CONDITIONS');
 
+const DB_PROPS = require('./DB_PROPS');
+
 const Table = require('./Table');
 
 var Database = function (props) {
@@ -16,6 +18,11 @@ var Database = function (props) {
 
     this.tables = {};
     this.addTables(props.tables);
+
+    this.connection = mysql.createConnection({
+        host: this.server,
+        user: this.user
+    });
 };
 
 /**
@@ -23,19 +30,22 @@ var Database = function (props) {
  * @return {}
  */
 Database.prototype.create = function () {
+    // Prep for db creation
     var commands = [
         [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, this.name].join(' '),
         [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, this.name].join(' '),
         [COMMANDS.USE, this.name].join(' '),
-        [COMMANDS.SET, 'FOREIGN_KEY_CHECKS=0'].join(' ')
+        [COMMANDS.SET, DB_PROPS.FOREIGN_KEY_CHECKS(0)].join(' ')
     ];
 
+    // Create all the tables
     for (var table in this.tables) {
         if (this.tables.hasOwnProperty(table)) {
             commands = commands.concat(this.getCreateTableCommand(this.tables[table]));
         }
     }
 
+    // Save a promise for executing things after its created
     this.created = this.execute(commands);
 
     return this.created;
@@ -54,8 +64,8 @@ var onSqlResponse = function (msg, resolve, reject, err) {
     resolve();
 };
 
-var queryPromise = function (connection, msg, resolve, reject) {
-    connection.query(msg, onSqlResponse.bind(this, msg, resolve, reject));
+var queryPromise = function (msg, resolve, reject) {
+    this.connection.query(msg, onSqlResponse.bind(this, msg, resolve, reject));
 };
 
 /**
@@ -67,20 +77,16 @@ Database.prototype.execute = function (commands) {
         commands = [commands];
     }
 
-    const connection = mysql.createConnection({
-        host: this.server,
-        user: this.user
-    });
 
-    connection.connect();
+    this.connection.connect();
 
     var promises = [];
 
     for (var i = 0, len = commands.length; i < len; i += 1) {
-        promises.push(new Promise(queryPromise.bind(this, connection, commands[i])));
+        promises.push(new Promise(queryPromise.bind(this, commands[i])));
     }
 
-    connection.end();
+    this.connection.end();
 
     return Promise.all(promises);
 };
@@ -110,8 +116,16 @@ Database.prototype.addTables = function (tables) {
     for (var tableName in tables) {
         if (tables.hasOwnProperty(tableName)) {
             var table = tables[tableName];
+
+            // Set the name
             table.name = tableName;
-            this.tables[tableName] = new Table(table);
+
+            // Create Table object
+            this.tables[tableName] = new Table(table, this.tables);
+
+            // When it's worked out what primary key it is, set it back so other things
+            // can reference it.
+            table.primaryKey = this.tables[tableName].primaryKey;
         }
     }
 };

@@ -1,18 +1,6 @@
 /****** Setup *******/
 
-
-// DO THIS PROPERLY
-// MAKE - TABLE
-// MAKE IT OUTPUT ITS OWN SQL BASED ON ITS PROBS
-// DATABASE.ADDTABLE(TABLE)
-// DOC WHILE YOU GO
-
-
 const Database = require('./jsql/Database');
-
-const Field = require('./jsql/Field');
-
-const Constraint = require('./jsql/Constraint');
 
 const FIELD_TYPES = require('./jsql/FIELD_TYPES');
 
@@ -32,97 +20,97 @@ var db = {
 
 db.tables.seasons = {
     fields: {
-        id: new Field({
+        id: {
             type: FIELD_TYPES.INT,
             attrs: [
                 FIELD_ATTRS.NOT_NULL,
                 FIELD_ATTRS.AUTO_INCREMENT
             ]
-        }),
-        year_start: new Field({
+        },
+        year_start: {
             type: FIELD_TYPES.INT
-        }),
-        year_end: new Field({
+        },
+        year_end: {
             type: FIELD_TYPES.INT
-        })
+        }
     },
     constraints: {
-        id: new Constraint({
+        id: {
             type: CONSTRAINTS.PRIMARY_KEY
-        })
+        }
     }
 };
 
 db.tables.drivers = {
     fields: {
-        id: new Field({
+        id: {
             type: FIELD_TYPES.INT,
             attrs: [
                 FIELD_ATTRS.NOT_NULL,
                 FIELD_ATTRS.AUTO_INCREMENT
             ]
-        }),
-        first_name: new Field({
+        },
+        first_name: {
             type: FIELD_TYPES.VARCHAR(32)
-        }),
-        second_name: new Field({
+        },
+        second_name: {
             type: FIELD_TYPES.VARCHAR(32)
-        })
+        }
     },
     constraints: {
-        id: new Constraint({
+        id: {
             type: CONSTRAINTS.PRIMARY_KEY
-        })
+        }
     }
 };
 
 db.tables.teams = {
     fields: {
-        id: new Field({
+        id: {
             type: FIELD_TYPES.INT,
             attrs: [
                 FIELD_ATTRS.NOT_NULL,
                 FIELD_ATTRS.AUTO_INCREMENT
             ]
-        }),
-        name: new Field({
+        },
+        name: {
             type: FIELD_TYPES.VARCHAR(32)
-        })
+        }
     },
     constraints: {
-        id: new Constraint({
+        id: {
             type: CONSTRAINTS.PRIMARY_KEY
-        })
+        }
     }
 };
 
 db.tables.seasons_teams_drivers = {
     fields: {
-        season_id: new Field({
+        season_id: {
             type: db.tables.seasons.fields.id.type
-        }),
-        team_id: new Field({
+        },
+        team_id: {
             type: db.tables.teams.fields.id.type
-        }),
-        driver_id: new Field({
+        },
+        driver_id: {
             type: db.tables.drivers.fields.id.type
-        })
+        }
     },
     constraints: {
-        season_id: new Constraint({
+        season_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.seasons
-        }),
+        },
 
-        team_id: new Constraint({
+        team_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.teams
-        }),
+        },
 
-        driver_id: new Constraint({
+        driver_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.drivers
-        })
+        }
     }
 };
 
