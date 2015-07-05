@@ -122,7 +122,7 @@ Database.prototype.addTables = function (tables) {
 
             // When it's worked out what primary key it is, set it back so other things
             // can reference it.
-            table.primaryKey = this.tables[tableName].primaryKey;
+            table.primaryKey = this.tables[tableName].getPrimaryKey();
         }
     }
 };

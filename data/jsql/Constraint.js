@@ -10,7 +10,9 @@ var Constraint = function (props) {
 Constraint.prototype.getDefinition = function () {
     var def = [this.type];
 
-    def.push('(' + this.fieldName + ')');
+    if (this.fieldName) {
+        def.push('(' + this.fieldName + ')');
+    }
 
     if (typeof(this.reference) === 'object') {
         def.push(CONSTRAINTS.REFERENCES);

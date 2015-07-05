@@ -6,7 +6,8 @@ const FIELD_TYPES = require('./jsql/FIELD_TYPES');
 
 const CONSTRAINTS = require('./jsql/CONSTRAINTS');
 
-const FIELD_ATTRS = require('./jsql/FIELD_ATTRS');
+// TODO - make constraints a child of a field
+// COMBINE ATTR WITH CONSTRAINTS
 
 
 // /******* Define the database *********/
@@ -22,9 +23,9 @@ db.tables.seasons = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
         year_start: {
@@ -33,11 +34,6 @@ db.tables.seasons = {
         year_end: {
             type: FIELD_TYPES.INT
         }
-    },
-    constraints: {
-        id: {
-            type: CONSTRAINTS.PRIMARY_KEY
-        }
     }
 };
 
@@ -45,9 +41,9 @@ db.tables.drivers = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
         first_name: {
@@ -56,11 +52,6 @@ db.tables.drivers = {
         second_name: {
             type: FIELD_TYPES.VARCHAR(32)
         }
-    },
-    constraints: {
-        id: {
-            type: CONSTRAINTS.PRIMARY_KEY
-        }
     }
 };
 
@@ -68,18 +59,13 @@ db.tables.teams = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
         name: {
             type: FIELD_TYPES.VARCHAR(32)
-        }
-    },
-    constraints: {
-        id: {
-            type: CONSTRAINTS.PRIMARY_KEY
         }
     }
 };
@@ -117,15 +103,13 @@ db.tables.seasons_teams_drivers = {
 db.tables.countries = {
     fields: {
         code: {
-            type: FIELD_TYPES.VARCHAR(3)
+            type: FIELD_TYPES.VARCHAR(3),
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY
+            ]
         },
         name: {
             type: FIELD_TYPES.VARCHAR(32)
-        }
-    },
-    constraints: {
-        code: {
-            type: CONSTRAINTS.PRIMARY_KEY
         }
     }
 };
@@ -134,9 +118,9 @@ db.tables.tracks = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
         country_id: {
@@ -147,9 +131,6 @@ db.tables.tracks = {
         }
     },
     constraints: {
-        id: {
-            type: CONSTRAINTS.PRIMARY_KEY
-        },
         country_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.countries
@@ -161,9 +142,9 @@ db.tables.events = {
     fields: {
         id: {
             type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
             ]
         },
         track_id: {
@@ -174,9 +155,6 @@ db.tables.events = {
         }
     },
     constraints: {
-        id: {
-            type: CONSTRAINTS.PRIMARY_KEY
-        },
         track_id: {
             type: CONSTRAINTS.FOREIGN_KEY,
             reference: db.tables.tracks
@@ -190,29 +168,25 @@ db.tables.events = {
 
 db.tables.results = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            attrs: [
-                FIELD_ATTRS.NOT_NULL,
-                FIELD_ATTRS.AUTO_INCREMENT
+        event_id: {
+            type: db.tables.events.fields.id.type,
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY
             ]
         },
-        track_id: {
-            type: db.tables.tracks.fields.id.type
-        },
-        season_id: {
-            type: db.tables.seasons.fields.id.type
+        pos_1: {
+            type: db.tables.drivers.fields.id.type
         }
     },
     constraints: {
-        id: [{
-                type: CONSTRAINTS.PRIMARY_KEY
-            },
-            {
-                type: CONSTRAINTS.FOREIGN_KEY,
-                reference: db.tables.tracks
-            }
-        ]
+        event_id: {
+            type: CONSTRAINTS.FOREIGN_KEY,
+            reference: db.tables.events
+        },
+        pos_1: {
+            type: CONSTRAINTS.FOREIGN_KEY,
+            reference: db.tables.drivers
+        }
     }
 };
 
