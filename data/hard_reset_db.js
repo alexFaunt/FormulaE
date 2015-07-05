@@ -19,6 +19,9 @@ var db = {
     tables: {}
 };
 
+/**
+ * Purely the Id and the times of the season
+ */
 db.tables.seasons = {
     fields: {
         id: {
@@ -37,6 +40,10 @@ db.tables.seasons = {
     }
 };
 
+/**
+ * Everything about a driver
+ * @type {Object}
+ */
 db.tables.drivers = {
     fields: {
         id: {
@@ -55,6 +62,10 @@ db.tables.drivers = {
     }
 };
 
+/**
+ * The teams that exist - ever
+ * @type {Object}
+ */
 db.tables.teams = {
     fields: {
         id: {
@@ -70,6 +81,10 @@ db.tables.teams = {
     }
 };
 
+/**
+ * Seasons Teams sign up, with drivers
+ * @type {Object}
+ */
 db.tables.seasons_teams_drivers = {
     fields: {
         season_id: {
@@ -100,6 +115,10 @@ db.tables.seasons_teams_drivers = {
     }
 };
 
+/**
+ * List of countries key'd by their 3 letter code ... ENG
+ * @type {Object}
+ */
 db.tables.countries = {
     fields: {
         code: {
@@ -114,6 +133,10 @@ db.tables.countries = {
     }
 };
 
+/**
+ * Tracks that exist
+ * @type {Object}
+ */
 db.tables.tracks = {
     fields: {
         id: {
@@ -138,6 +161,10 @@ db.tables.tracks = {
     }
 };
 
+/**
+ * Types of event - e.g. qualifying race
+ * @type {Object}
+ */
 db.tables.event_types = {
     fields: {
         id: {
@@ -153,6 +180,10 @@ db.tables.event_types = {
     }
 };
 
+/**
+ * Race meetings - rounds, e.g. round 11
+ * @type {Object}
+ */
 db.tables.rounds = {
     fields: {
         id: {
@@ -162,11 +193,14 @@ db.tables.rounds = {
                 CONSTRAINTS.AUTO_INCREMENT
             ]
         },
-        track_id: {
-            type: db.tables.tracks.fields.id.type
-        },
         season_id: {
             type: db.tables.seasons.fields.id.type
+        },
+        round_number: {
+            type: FIELD_TYPES.INT
+        },
+        track_id: {
+            type: db.tables.tracks.fields.id.type
         },
         date_start: {
             type: FIELD_TYPES.DATE
@@ -187,6 +221,10 @@ db.tables.rounds = {
     }
 };
 
+/**
+ *  An event is part of a round, e.g. qualifying in round 10
+ * @type {Object}
+ */
 db.tables.events = {
     fields: {
         id: {
@@ -208,7 +246,30 @@ db.tables.events = {
     }
 };
 
-db.tables.event_driver_position = {
+/**
+ * Status of driver in race e.g. finished - retired
+ * @type {Object}
+ */
+db.tables.status_types = {
+    fields: {
+        id: {
+            type: FIELD_TYPES.INT,
+            constraints: [
+                CONSTRAINTS.PRIMARY_KEY,
+                CONSTRAINTS.AUTO_INCREMENT
+            ]
+        },
+        name: {
+            type: FIELD_TYPES.VARCHAR(32)
+        }
+    }
+};
+
+/**
+ * A drivers results in a given event.
+ * @type {Object}
+ */
+db.tables.event_driver_result = {
     fields: {
         event_id: {
             type: db.tables.events.fields.id.type
@@ -217,6 +278,12 @@ db.tables.event_driver_position = {
             type: db.tables.drivers.fields.id.type
         },
         position: {
+            type: FIELD_TYPES.INT
+        },
+        status: {
+            type: db.tables.status_types.fields.id.type
+        },
+        laps_completed: {
             type: FIELD_TYPES.INT
         }
     },
@@ -232,7 +299,10 @@ db.tables.event_driver_position = {
     }
 };
 
+// MAKE A DB FROM MY JSON
 var database = new Database(db);
+
+// START FROM SCRATCH!
 database.create();
 
 
