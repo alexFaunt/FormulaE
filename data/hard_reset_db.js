@@ -19,25 +19,52 @@ var db = {
     tables: {}
 };
 
+/******* Helpers so i can be lazy *******/
+
+/**
+ * A standard int field
+ * @type {Object}
+ */
+var fieldInt = {
+    type: FIELD_TYPES.INT
+};
+
+/**
+ * A var char field, simple
+ * @return {[type]}
+ */
+var fieldVarChar = function (size) {
+    return {
+        type: FIELD_TYPES.VARCHAR(size)
+    };
+};
+
+/**
+ * An integer primary key auto incrementing
+ * @type {Object}
+ */
+var fieldIntAutoPk = {
+    type: FIELD_TYPES.INT,
+    constraints: [
+        CONSTRAINTS.PRIMARY_KEY,
+        CONSTRAINTS.AUTO_INCREMENT
+    ]
+};
+
+/******* End Helpers so i can be lazy *******/
+
+
+
 /**
  * Purely the Id and the times of the season
  */
 db.tables.seasons = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
-        year_start: {
-            type: FIELD_TYPES.INT
-        },
-        year_end: {
-            type: FIELD_TYPES.INT
-        }
-    }
+        id: fieldIntAutoPk,
+        year_start: fieldInt,
+        year_end: fieldInt
+    },
+    data: null /////////////////////////////// TODO - populate Data in each. Also add methods, addData
 };
 
 /**
@@ -46,19 +73,9 @@ db.tables.seasons = {
  */
 db.tables.drivers = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
-        first_name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        },
-        second_name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        id: fieldIntAutoPk,
+        first_name: fieldVarChar(32),
+        second_name: fieldVarChar(32)
     }
 };
 
@@ -68,16 +85,8 @@ db.tables.drivers = {
  */
 db.tables.teams = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
-        name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        id: fieldIntAutoPk,
+        name: fieldVarChar(32)
     }
 };
 
@@ -127,9 +136,7 @@ db.tables.countries = {
                 CONSTRAINTS.PRIMARY_KEY
             ]
         },
-        name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        name: fieldVarChar(32)
     }
 };
 
@@ -139,19 +146,11 @@ db.tables.countries = {
  */
 db.tables.tracks = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
+        id: fieldIntAutoPk,
         country_id: {
             type: db.tables.countries.fields.code.type
         },
-        name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        name: fieldVarChar(32)
     },
     constraints: {
         country_id: {
@@ -167,16 +166,8 @@ db.tables.tracks = {
  */
 db.tables.event_types = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
-        name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        id: fieldIntAutoPk,
+        name: fieldVarChar(32)
     }
 };
 
@@ -186,19 +177,11 @@ db.tables.event_types = {
  */
 db.tables.rounds = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
+        id: fieldIntAutoPk,
         season_id: {
             type: db.tables.seasons.fields.id.type
         },
-        round_number: {
-            type: FIELD_TYPES.INT
-        },
+        round_number: fieldInt,
         track_id: {
             type: db.tables.tracks.fields.id.type
         },
@@ -227,13 +210,7 @@ db.tables.rounds = {
  */
 db.tables.events = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
+        id: fieldIntAutoPk,
         round_id: {
             type: db.tables.rounds.fields.id.type
         },
@@ -252,16 +229,8 @@ db.tables.events = {
  */
 db.tables.status_types = {
     fields: {
-        id: {
-            type: FIELD_TYPES.INT,
-            constraints: [
-                CONSTRAINTS.PRIMARY_KEY,
-                CONSTRAINTS.AUTO_INCREMENT
-            ]
-        },
-        name: {
-            type: FIELD_TYPES.VARCHAR(32)
-        }
+        id: fieldIntAutoPk,
+        name: fieldVarChar(32)
     }
 };
 
@@ -277,15 +246,11 @@ db.tables.event_driver_result = {
         driver_id: {
             type: db.tables.drivers.fields.id.type
         },
-        position: {
-            type: FIELD_TYPES.INT
-        },
+        position: fieldInt,
         status: {
             type: db.tables.status_types.fields.id.type
         },
-        laps_completed: {
-            type: FIELD_TYPES.INT
-        }
+        laps_completed: fieldInt
     },
     constraints: {
         event_id: {
@@ -305,7 +270,7 @@ var database = new Database(db);
 // START FROM SCRATCH!
 database.create();
 
-
+// database.populate();
 
 
 
