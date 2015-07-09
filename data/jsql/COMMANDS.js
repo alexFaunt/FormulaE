@@ -3,5 +3,6 @@ module.exports = {
     USE: 'USE',
     CREATE: 'CREATE',
     DROP: 'DROP',
-    SET: 'SET'
+    SET: 'SET',
+    INSERT_INTO: 'INSERT INTO'
 };

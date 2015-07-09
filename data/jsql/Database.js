@@ -21,6 +21,8 @@ var Database = function (props) {
         host: this.server,
         user: this.user
     });
+
+    this.connection.connect();
 };
 
 /**
@@ -42,10 +44,14 @@ Database.prototype.create = function () {
         }
     }
 
-    // Save a promise for executing things after its created
-    this.created = this.execute(commands);
+    // Save a promise for executing things after its ready
+    this.ready = this.execute(commands);
 
-    return this.created;
+    this.ready.then(function () {
+        console.log('Creation completed!');
+    });
+
+    return this.ready;
 };
 
 /** Log or throw! **/
@@ -57,12 +63,15 @@ var onSqlResponse = function (msg, resolve, reject, err) {
         throw err;
     }
 
-    console.log(msg);
     resolve();
 };
 
-var queryPromise = function (msg, resolve, reject) {
+Database.prototype.queryPromise = function (msg, resolve, reject) {
     this.connection.query(msg, onSqlResponse.bind(this, msg, resolve, reject));
+};
+
+var error = function () {
+    console.log('error');
 };
 
 /**
@@ -70,20 +79,19 @@ var queryPromise = function (msg, resolve, reject) {
  * @param  {String[]} Either a string or array of strings
  */
 Database.prototype.execute = function (commands) {
+
     if (typeof(commands) === 'string') {
         commands = [commands];
     }
 
-
-    this.connection.connect();
-
     var promises = [];
 
     for (var i = 0, len = commands.length; i < len; i += 1) {
-        promises.push(new Promise(queryPromise.bind(this, commands[i])));
-    }
 
-    this.connection.end();
+        console.log(commands[i]);
+
+        promises.push(new Promise(this.queryPromise.bind(this, commands[i])), error);
+    }
 
     return Promise.all(promises);
 };
@@ -125,6 +133,22 @@ Database.prototype.addTables = function (tables) {
             table.primaryKey = this.tables[tableName].getPrimaryKey();
         }
     }
+};
+
+
+Database.prototype.populate = function (data) {
+    var commands = [];
+    for (var table in data) {
+        if (data.hasOwnProperty(table)) {
+            commands = commands.concat(this.tables[table].insert(data[table]));
+        }
+    }
+
+    return this.ready
+        .then(this.execute.bind(this, commands))
+        .then(function () {
+            console.log('Populate Success');
+        }, error);
 };
 
 module.exports = Database;

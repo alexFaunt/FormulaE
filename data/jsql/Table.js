@@ -49,6 +49,7 @@ Table.prototype.getCommand = function (opts) {
 
     cmd.push(OBJECT_TYPES.TABLE);
 
+
     if (opts.condition) {
         cmd.push(opts.condition);
     }
@@ -63,6 +64,24 @@ Table.prototype.getCommand = function (opts) {
     }
 
     return cmd.join(' ');
+};
+
+Table.prototype.insert = function (rows) {
+
+    var cmds = [];
+
+    rows = Object.prototype.toString.call(rows) === '[object Array]' ? rows : [rows];
+
+    for (var i = 0, len = rows.length; i < len; i += 1) {
+        var cmd = [];
+        cmd.push(COMMANDS.INSERT_INTO);
+        cmd.push(this.name);
+        cmd.push('VALUES');
+        cmd.push('(' + rows[i].join(',') + ')');
+        cmds.push(cmd.join(' '));
+    }
+
+    return cmds;
 };
 
 /**
@@ -132,7 +151,6 @@ Table.prototype.getTableConstraints = function () {
 
     return constraints;
 };
-
 
 
 module.exports = Table;
