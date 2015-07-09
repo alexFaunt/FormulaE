@@ -26,7 +26,6 @@ db.create();
 
 db.populate(data);
 
-
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -46,21 +45,34 @@ router.get('/', function(req, res) {
 // more routes for our API will happen here
 
 // REGISTER OUR ROUTES -------------------------------
+
+router.route('/test')
+
+    // create a bear (accessed at POST http://localhost:8080/api/bears)
+    .get(function(req, res) {
+        res.json({
+            message: "NEED A WAY TO FETCH STUFF FROM DB"
+        });
+    });
+
+
 // all of our routes will be prefixed with /api
 app.use('/api', router);
 
-// START THE SERVER
-// =============================================================================
-app.listen(port);
 
+
+
+// Try to close gracefully.
 process.on('SIGTERM', function () {
     console.log("Closing");
     app.close();
 });
-
 app.on('close', function () {
     db.connection.destroy();
     console.log("Closed");
 });
 
+// Start
+app.listen(port);
 console.log('Magic happens on port ' + port);
+
