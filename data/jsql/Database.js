@@ -1,11 +1,13 @@
 
+const _ = require('lodash');
+
 const mysql = require('mysql');
 
 const COMMANDS = require('./COMMANDS');
 
 const OBJECT_TYPES = require('./OBJECT_TYPES');
 
-const CONDITIONS = require('./CONDITIONS');
+const CONSTRAINTS = require('./CONSTRAINTS');
 
 const Table = require('./Table');
 
@@ -32,7 +34,7 @@ var Database = function (props) {
 Database.prototype.create = function () {
     // Prep for db creation
     var commands = [
-        [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONDITIONS.IF_EXISTS, this.name].join(' '),
+        [COMMANDS.DROP, OBJECT_TYPES.DATABASE, CONSTRAINTS.IF_EXISTS, this.name].join(' '),
         [COMMANDS.CREATE, OBJECT_TYPES.DATABASE, this.name].join(' '),
         [COMMANDS.USE, this.name].join(' ')
     ];
@@ -55,7 +57,7 @@ Database.prototype.create = function () {
 };
 
 /** Log or throw! **/
-var onSqlResponse = function (msg, resolve, reject, err) {
+var onSqlResponse = function (msg, resolve, reject, err, response) {
     if (err) {
         console.error('error in ' + msg);
         console.error(err);
@@ -63,7 +65,7 @@ var onSqlResponse = function (msg, resolve, reject, err) {
         throw err;
     }
 
-    resolve();
+    resolve(response);
 };
 
 Database.prototype.queryPromise = function (msg, resolve, reject) {
@@ -93,7 +95,13 @@ Database.prototype.execute = function (commands) {
         promises.push(new Promise(this.queryPromise.bind(this, commands[i])), error);
     }
 
-    return Promise.all(promises);
+    return Promise.all(promises)
+        .then(function (args) {
+            if (_.isArray(args) && args.length) {
+                return args[0];
+            }
+            return args;
+        });
 };
 
 
@@ -103,7 +111,7 @@ Database.prototype.getCreateTableCommand = function (table) {
 
     commands.push(table.getCommand({
         command: COMMANDS.DROP,
-        condition: CONDITIONS.IF_EXISTS
+        condition: CONSTRAINTS.IF_EXISTS
     }));
 
     commands.push(table.getCommand({
@@ -136,6 +144,11 @@ Database.prototype.addTables = function (tables) {
 };
 
 
+/**
+ * Given json data - populate the DB with the tables
+ * @param  {JSON} data
+ * @return {Promise}
+ */
 Database.prototype.populate = function (data) {
     var commands = [];
     for (var table in data) {
@@ -150,6 +163,44 @@ Database.prototype.populate = function (data) {
             console.log('Populate Success');
         }, error);
 };
+
+// Read Interface.
+
+Database.prototype.select = function (targets) {
+    var command = [COMMANDS.SELECT];
+
+    // For all the tables
+    for (var tableName in targets) {
+        if (targets.hasOwnProperty(tableName)) {
+            var fields = targets[tableName];
+            var cols = [];
+
+            // Get their columns
+            for (var column in fields) {
+                if (fields.hasOwnProperty(column)) {
+                    cols.push(column);
+                }
+            }
+
+            command.push(cols.join(','));
+            command.push(CONSTRAINTS.FROM);
+            command.push(tableName);
+        }
+    }
+
+    return this.ready
+        .then(this.execute.bind(this, command.join(' ')));
+};
+
+Database.prototype.selectDriver = function () {
+    return this.select({
+        drivers: {
+            first_name: true,
+            second_name: true
+        }
+    });
+};
+
 
 module.exports = Database;
 

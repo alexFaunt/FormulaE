@@ -4,5 +4,6 @@ module.exports = {
     CREATE: 'CREATE',
     DROP: 'DROP',
     SET: 'SET',
-    INSERT_INTO: 'INSERT INTO'
+    INSERT_INTO: 'INSERT INTO',
+    SELECT: 'SELECT'
 };

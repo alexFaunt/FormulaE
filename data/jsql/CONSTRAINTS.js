@@ -7,5 +7,7 @@ module.exports = {
     AUTO_INCREMENT: 'AUTO_INCREMENT',
     UNIQUE: 'UNIQUE',
     DEFAULT: 'DEFAULT',
-    CHECK: 'CHECK'
+    CHECK: 'CHECK',
+    IF_EXISTS: 'IF EXISTS',
+    FROM: 'FROM'
 };
